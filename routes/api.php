@@ -7,17 +7,19 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\CollaboratorController;
 use App\Http\Controllers\ScheduleController;
 
-// Rota REST completa para Users
-Route::apiResource('users', UserController::class);
+use App\Http\Controllers\AuthController;
 
-// Rota REST completa para Services
-Route::apiResource('services', ServiceController::class);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
-// Rota REST completa para Appointments
-Route::apiResource('appointments', AppointmentController::class);
+Route::middleware('auth:sanctum')->group(function(){
+    Route::post('logout', [AuthController::class, 'logout']);
+    
+    // Exemplo de rotas protegidas
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('services', ServiceController::class);
+    Route::apiResource('appointments', AppointmentController::class);
+    Route::apiResource('collaborators', CollaboratorController::class);
+    Route::apiResource('schedules', ScheduleController::class);
+});
 
-// Rota REST completa para Collaborators
-Route::apiResource('collaborators', CollaboratorController::class);
-
-// Rota REST completa para Schedules
-Route::apiResource('schedules', ScheduleController::class);
