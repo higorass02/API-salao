@@ -32,12 +32,15 @@ class AppointmentController extends Controller
     {
         $validated = $request->validate([
             'dt_appointment' => 'sometimes|date_format:Y-m-d H:i:s',
-            'status' => 'sometimes|string|in:pending,confirmed,canceled,completed',
+            'status' => 'sometimes|integer|in:0,1,2,3', // se status for integer
         ]);
 
         $appointment->update($validated);
 
-        return response()->json($appointment);
+        return response()->json([
+            'message' => 'Agendamento atualizado com sucesso!',
+            'appointment' => $appointment
+        ]);
     }
 
     public function destroy(Appointment $appointment)

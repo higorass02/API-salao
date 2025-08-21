@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Collaborator extends Model
 {
-    protected $fillable = ['bio', 'status', 'specialities', 'user_id'];
+    protected $fillable = ['bio', 'status', 'specialities', 'user_id', 'created_at', 'updated_at'];
+    protected $dates = ['created_at', 'updated_at'];
 
     public function user()
     {
