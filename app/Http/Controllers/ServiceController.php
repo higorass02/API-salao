@@ -19,6 +19,7 @@ class ServiceController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:1',
+            'category' => 'nullable|string|max:255',
         ]);
 
         $service = Service::create($validated);
@@ -38,6 +39,7 @@ class ServiceController extends Controller
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'duration' => 'sometimes|integer|min:1',
+            'category' => 'nullable|string|max:255',
         ]);
 
         $service->update($validated);
