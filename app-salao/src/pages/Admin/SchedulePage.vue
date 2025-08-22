@@ -15,6 +15,9 @@
         <div
           class="custom-event"
           :title="props.event.title"
+          tabindex="0"
+          role="button"
+          aria-label="Agendamento: {{ props.event.title }}. {{ props.event.content }}"
         >
           <div class="custom-event-title">{{ props.event.title }}</div>
           <div class="custom-event-content">{{ props.event.content }}</div>
@@ -103,16 +106,16 @@ async function fetchAppointments() {
   const data = response.data.data || response.data;
 
   events.value = data.map(a => {
-    // Garante formato ISO e converte para Date
     const dateStr = (a.dt_appointment || a.appointment_datetime || '').replace(' ', 'T');
     const start = dateStr ? new Date(dateStr) : null;
-    // Adiciona 1 hora de duração
     const end = start ? new Date(start.getTime() + 60 * 60 * 1000) : null;
+    // Busca o nome do cliente pelo client_id
+    const client = clients.value.find(c => c.id === a.client_id);
     return {
       id: a.id,
       start,
       end,
-      title: a.service_name || a.title || 'Agendamento',
+      title: `${a.service_name || 'Agendamento'} - ${client ? client.name : ''}`,
       content: a.notes || ''
     };
   }).filter(ev => ev.start instanceof Date && !isNaN(ev.start) && ev.end instanceof Date && !isNaN(ev.end));
@@ -169,8 +172,19 @@ async function addAppointment() {
   saving.value = false;
 }
 
-function onEventClick({ event }) {
-  alert(`Agendamento: ${event.title}`);
+// Função robusta para qualquer formato de parâmetro do vue-cal
+function onEventClick(payload) {
+  let event = null;
+  if (payload && payload.event) {
+    event = payload.event;
+  } else if (payload && payload.title) {
+    event = payload;
+  }
+  if (event) {
+    alert(`Agendamento: ${event.title}`);
+  } else {
+    alert('Evento não encontrado.');
+  }
 }
 
 onMounted(() => {
@@ -183,34 +197,38 @@ onMounted(() => {
 
 <style scoped>
 .custom-event {
-  background: linear-gradient(90deg, #1976d2 60%, #42a5f5 100%);
+  background: #1565c0;
   color: #fff;
-  border-radius: 6px;
-  border-left: 5px solid #1565c0;
-  padding: 6px 10px;
-  margin: 2px 0;
-  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.08);
-  font-size: 15px;
+  border-radius: 8px;
+  border-left: 6px solid #0d47a1;
+  padding: 10px 12px;
+  margin: 4px 0;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.10);
+  font-size: 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 38px;
+  min-height: 44px;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  outline: none;
+  transition: box-shadow 0.2s, background 0.2s;
 }
+.custom-event:focus,
 .custom-event:hover {
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.18);
-  background: linear-gradient(90deg, #1565c0 60%, #1976d2 100%);
+  box-shadow: 0 4px 16px rgba(21, 101, 192, 0.22);
+  background: #0d47a1;
 }
 .custom-event-title {
-  font-weight: bold;
-  font-size: 15px;
+  font-weight: 700;
+  font-size: 16px;
   margin-bottom: 2px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.10);
+  letter-spacing: 0.5px;
 }
 .custom-event-content {
-  font-size: 13px;
-  opacity: 0.85;
+  font-size: 14px;
+  opacity: 0.95;
   white-space: pre-line;
+  margin-top: 2px;
 }
 </style>
