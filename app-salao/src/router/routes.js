@@ -5,6 +5,7 @@ import LoginPage from 'pages/Auth/LoginPage.vue';
 import RegisterPage from 'pages/Auth/RegisterPage.vue';
 import ServicesPage from 'pages/Admin/ServicesPage.vue';
 import DashboardPage from 'pages/Admin/DashboardPage.vue';
+import SchedulePage from 'src/pages/Admin/SchedulePage.vue';
 import CollaboratorsPage from 'src/pages/Admin/CollaboratorsPage.vue';
 
 const routes = [
@@ -13,7 +14,7 @@ const routes = [
     component: AuthLayout,
     children: [
       { path: 'login', component: LoginPage },
-      { path: 'register', component: RegisterPage }
+      { path: 'register', component: RegisterPage },
     ]
   },
   // Admin
@@ -21,23 +22,12 @@ const routes = [
     path: '/admin',
     component: MainLayout,
     children: [
+      { path: '', component: SchedulePage },
       { path: 'dashboard', component: DashboardPage },
       { path: 'services', component: ServicesPage },
       { path: 'collaborators', component: CollaboratorsPage },
     ]
   },
-  // Layout principal
-  // {
-  //   path: '/',
-  //   component: () => import('layouts/MainLayout.vue'),
-  //   children: [
-  //     { path: '', redirect: '/admin/dashboard' },
-  //     { path: 'admin/dashboard', component: () => import('pages/Admin/DashboardPage.vue') },
-  //     { path: 'admin/services', component: () => import('pages/Admin/ServicesPage.vue') },
-  //     { path: 'admin/collaborators', component: () => import('pages/Admin/CollaboratorsPage.vue') },
-  //     { path: 'admin/appointments', component: () => import('pages/Admin/AppointmentsPage.vue') },
-  //   ]
-  // },
   // 404
   { path: '/:catchAll(.*)*', component: () => import('pages/ErrorNotFound.vue') }
 ];

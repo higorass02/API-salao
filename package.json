@@ -20,6 +20,7 @@
         "@fullcalendar/interaction": "^6.1.19",
         "@fullcalendar/timegrid": "^6.1.19",
         "@fullcalendar/vue3": "^6.1.19",
-        "dayjs": "^1.11.13"
+        "dayjs": "^1.11.13",
+        "vue-cal": "^4.10.2"
     }
 }

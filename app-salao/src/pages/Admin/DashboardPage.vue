@@ -14,7 +14,7 @@
                 <div class="text-subtitle2">Veja e gerencie os agendamentos do salão.</div>
               </q-card-section>
               <q-card-actions align="right">
-                <q-btn label="Ver" color="primary" to="/admin/appointments" />
+                <q-btn label="Ver" color="primary" to="/admin/" />
               </q-card-actions>
             </q-card>
           </div>

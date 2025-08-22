@@ -11,7 +11,7 @@
         <q-item to="/admin/dashboard" clickable>Dashboard</q-item>
         <q-item to="/admin/services" clickable>Serviços</q-item>
         <q-item to="/admin/collaborators" clickable>Colaboradores</q-item>
-        <q-item to="/admin/appointments" clickable>Agendamentos</q-item>
+        <q-item to="/admin/" clickable>Agendamentos</q-item>
       </q-list>
     </q-drawer>
 
