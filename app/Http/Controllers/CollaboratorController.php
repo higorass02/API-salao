@@ -9,17 +9,27 @@ class CollaboratorController extends Controller
 {
     public function index()
     {
-        return response()->json(Collaborator::all());
+        $collaborators = Collaborator::with('user')->get();
+
+        $result = $collaborators->map(function($collab) {
+            return [
+                'id' => $collab->id,
+                'bio' => $collab->bio,
+                'specialities' => $collab->specialities,
+                'user_id' => $collab->user_id,
+                'user_name' => $collab->user ? $collab->user->name . ' ('. $collab->user->id . ')' : null,
+            ];
+        });
+
+        return response()->json($result);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'role' => 'required|string|max:255',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'active' => 'boolean',
+            'bio' => 'required|string|max:255',
+            'specialities' => 'required|string|max:255',
+            'user_id' => 'required|exists:users,id',
         ]);
 
         $collaborator = Collaborator::create($validated);
@@ -35,11 +45,10 @@ class CollaboratorController extends Controller
     public function update(Request $request, Collaborator $collaborator)
     {
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'role' => 'sometimes|string|max:255',
-            'start_time' => 'sometimes|date_format:H:i',
-            'end_time' => 'sometimes|date_format:H:i',
-            'active' => 'boolean',
+            'bio' => 'sometimes|string|max:255',
+            'specialities' => 'sometimes|string|max:255',
+            'status' => 'sometimes|boolean',
+            'user_id' => 'required|exists:users,id',
         ]);
 
         $collaborator->update($validated);

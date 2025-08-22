@@ -5,6 +5,7 @@ import LoginPage from 'pages/Auth/LoginPage.vue';
 import RegisterPage from 'pages/Auth/RegisterPage.vue';
 import ServicesPage from 'pages/Admin/ServicesPage.vue';
 import DashboardPage from 'pages/Admin/DashboardPage.vue';
+import CollaboratorsPage from 'src/pages/Admin/CollaboratorsPage.vue';
 
 const routes = [
   {
@@ -22,6 +23,7 @@ const routes = [
     children: [
       { path: 'dashboard', component: DashboardPage },
       { path: 'services', component: ServicesPage },
+      { path: 'collaborators', component: CollaboratorsPage },
     ]
   },
   // Layout principal

@@ -25,34 +25,67 @@
         :filter="debouncedSearch"
         no-data-label="Nenhum serviço cadastrado"
       >
-    <template v-slot:body-cell-actions="props">
-        <q-td align="center">
-        <q-btn size="sm" color="primary" icon="edit" @click="openEdit(props.row)" flat round />
-        </q-td>
-    </template>
-    </q-table>
+        <template v-slot:body-cell-actions="props">
+          <q-td align="center">
+            <q-btn size="sm" color="primary" icon="edit" @click="openEdit(props.row)" flat round />
+            <q-btn
+              size="sm"
+              color="negative"
+              icon="delete"
+              class="q-ml-sm"
+              @click="confirmDelete(props.row.id)"
+              flat
+              round
+            />
+          </q-td>
+        </template>
+      </q-table>
       <q-inner-loading :showing="searching">
         <q-spinner size="50px" color="primary" />
         <div class="text-primary q-mt-md">Buscando...</div>
+      </q-inner-loading>
+      <q-inner-loading :showing="deleting">
+        <q-spinner color="negative" size="50px" />
+        <div class="text-negative q-mt-md">Excluindo serviço...</div>
       </q-inner-loading>
     </div>
 
     <!-- Diálogo de adicionar serviço -->
     <q-dialog v-model="showAdd">
-    <q-card>
+      <q-card>
         <q-card-section>
-        <div class="text-h6">Adicionar Serviço</div>
-        <q-input v-model="form.name" label="Nome" outlined class="q-mb-sm" />
-        <q-input v-model="form.description" label="Descrição" outlined class="q-mb-sm" />
-        <q-input v-model="form.duration" label="Duração (min)" type="number" outlined class="q-mb-sm" />
-        <q-input v-model="form.price" label="Preço" type="number" outlined class="q-mb-sm" />
-        <q-input v-model="form.category" label="Categoria" outlined class="q-mb-sm" />
+          <div class="text-h6">Adicionar Serviço</div>
+          <q-input v-model="form.name" label="Nome" outlined class="q-mb-sm" />
+          <q-input v-model="form.description" label="Descrição" outlined class="q-mb-sm" />
+          <q-input v-model="form.duration" label="Duração (min)" type="number" outlined class="q-mb-sm" />
+          <q-input v-model="form.price" label="Preço" type="number" outlined class="q-mb-sm" />
+          <q-input v-model="form.category" label="Categoria" outlined class="q-mb-sm" />
         </q-card-section>
         <q-card-actions align="right">
-        <q-btn flat label="Cancelar" v-close-popup />
-        <q-btn color="primary" label="Salvar" @click="addService" :loading="saving" />
+          <q-btn flat label="Cancelar" v-close-popup />
+          <q-btn color="primary" label="Salvar" @click="addService" :loading="saving" />
         </q-card-actions>
-    </q-card>
+      </q-card>
+    </q-dialog>
+
+    <!-- Modal de confirmação -->
+    <q-dialog v-model="showDeleteDialog">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Confirmar exclusão</div>
+          <div>Tem certeza que deseja excluir este serviço?</div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="primary" v-close-popup />
+          <q-btn
+            flat
+            label="Excluir"
+            color="negative"
+            @click="deleteService"
+            :loading="deleting"
+          />
+        </q-card-actions>
+      </q-card>
     </q-dialog>
 
     <!-- Diálogo de editar serviço -->
@@ -84,6 +117,9 @@ const loading = ref(false);
 const showAdd = ref(false);
 const showEdit = ref(false);
 const saving = ref(false);
+const deleting = ref(false);
+const showDeleteDialog = ref(false);
+const serviceToDelete = ref(null);
 
 const search = ref('');
 const debouncedSearch = ref('');
@@ -164,6 +200,25 @@ async function updateService() {
     // Trate o erro conforme necessário
   }
   saving.value = false;
+}
+
+async function deleteService() {
+  if (!serviceToDelete.value) return;
+  deleting.value = true;
+  try {
+    await api.delete(`/services/${serviceToDelete.value}`);
+    fetchServices();
+  } catch {
+    // Trate o erro conforme necessário
+  }
+  deleting.value = false;
+  showDeleteDialog.value = false;
+  serviceToDelete.value = null;
+}
+
+function confirmDelete(id) {
+  serviceToDelete.value = id;
+  showDeleteDialog.value = true;
 }
 
 onMounted(fetchServices);
