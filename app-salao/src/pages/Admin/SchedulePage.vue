@@ -24,6 +24,7 @@
         </div>
       </template>
     </vue-cal>
+
     <!-- Modal de novo agendamento -->
     <q-dialog v-model="showAdd">
       <q-card style="min-width:350px">
@@ -77,6 +78,23 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Modal de detalhes do agendamento -->
+    <q-dialog v-model="showDetails">
+      <q-card style="min-width:350px;max-width:400px">
+        <q-card-section>
+          <div class="text-h6 q-mb-sm">Detalhes do Agendamento</div>
+          <div class="q-mb-xs"><b>Serviço:</b> {{ details.service }}</div>
+          <div class="q-mb-xs"><b>Colaborador:</b> {{ details.collaborator }}</div>
+          <div class="q-mb-xs"><b>Cliente:</b> {{ details.client }}</div>
+          <div class="q-mb-xs"><b>Data e Hora:</b> {{ details.datetime }}</div>
+          <div class="q-mb-xs"><b>Observações:</b> <br> <span style="white-space: pre-line">{{ details.notes }}</span></div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Fechar" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -88,7 +106,15 @@ import { api } from 'boot/axios';
 
 const events = ref([]);
 const showAdd = ref(false);
+const showDetails = ref(false);
 const saving = ref(false);
+const details = ref({
+  service: '',
+  collaborator: '',
+  client: '',
+  datetime: '',
+  notes: ''
+});
 const form = ref({
   dt_appointment: '',
   service_id: '',
@@ -101,6 +127,14 @@ const services = ref([]);
 const collaborators = ref([]);
 const clients = ref([]);
 
+// Carrega todos os dados auxiliares antes de montar os eventos
+async function loadAllAndAppointments() {
+  await fetchServices();
+  await fetchCollaborators();
+  await fetchClients();
+  await fetchAppointments();
+}
+
 async function fetchAppointments() {
   const response = await api.get('/appointments');
   const data = response.data.data || response.data;
@@ -109,14 +143,22 @@ async function fetchAppointments() {
     const dateStr = (a.dt_appointment || a.appointment_datetime || '').replace(' ', 'T');
     const start = dateStr ? new Date(dateStr) : null;
     const end = start ? new Date(start.getTime() + 60 * 60 * 1000) : null;
-    // Busca o nome do cliente pelo client_id
-    const client = clients.value.find(c => c.id === a.client_id);
+    // Busca nomes pelo id
+    const service = services.value.find(s => s.id === a.service_id);
+    const collaborator = collaborators.value.find(c => c.id === a.staff_id);
+    const client = clients.value.find(u => u.id === a.client_id);
     return {
       id: a.id,
       start,
       end,
-      title: `${a.service_name || 'Agendamento'} - ${client ? client.name : ''}`,
-      content: a.notes || ''
+      title: `${service ? service.name : 'Agendamento'} - ${client ? client.name : ''}`,
+      content: a.notes || '',
+      raw: a,
+      service: service ? service.name : '',
+      collaborator: collaborator ? collaborator.user_name : '',
+      client: client ? client.name : '',
+      datetime: start ? start.toLocaleString('pt-BR') : '',
+      notes: a.notes || ''
     };
   }).filter(ev => ev.start instanceof Date && !isNaN(ev.start) && ev.end instanceof Date && !isNaN(ev.end));
 }
@@ -165,33 +207,29 @@ async function addAppointment() {
   try {
     await api.post('/appointments', form.value);
     showAdd.value = false;
-    fetchAppointments();
+    await fetchAppointments();
   } catch (e) {
     console.error(e);
   }
   saving.value = false;
 }
 
-// Função robusta para qualquer formato de parâmetro do vue-cal
 function onEventClick(payload) {
-  let event = null;
-  if (payload && payload.event) {
-    event = payload.event;
-  } else if (payload && payload.title) {
-    event = payload;
-  }
+  let event = payload?.event || payload;
   if (event) {
-    alert(`Agendamento: ${event.title}`);
-  } else {
-    alert('Evento não encontrado.');
+    details.value = {
+      service: event.service,
+      collaborator: event.collaborator,
+      client: event.client,
+      datetime: event.datetime,
+      notes: event.notes
+    };
+    showDetails.value = true;
   }
 }
 
 onMounted(() => {
-  fetchCollaborators();
-  fetchClients();
-  fetchServices();
-  fetchAppointments();
+  loadAllAndAppointments();
 });
 </script>
 
